@@ -2,6 +2,7 @@ package ossapi
 
 import (
     "encoding/xml"
+    "io"
 )
 
 type BucketList struct {
@@ -47,14 +48,14 @@ type CopyObjectResult struct {
 
 
 //Check status code before using any of the funcs here.
-func ParseListBucket(content *io.ReadCloser) (bucketList *BucketList, err error) {
+func ParseListBucket(content io.ReadCloser) (bucketList *BucketList, err error) {
     defer content.Close()
     decoder := xml.NewDecoder(content)
     err = decoder.Decode(bucketList)
     return
 }
 
-func ParseListObject(content *io.ReadCloser) (objectList *ObjectList, err error) {
+func ParseListObject(content io.ReadCloser) (objectList *ObjectList, err error) {
     defer content.Close()
     decoder := xml.NewDecoder(content)
     err = decoder.Decode(objectList)

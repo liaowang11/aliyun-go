@@ -15,12 +15,12 @@ type Error struct {
 }
 
 
-func ParseXmlError(content *io.Reader) (*Error, error) {
+func ParseXmlError(content io.Reader) (*Error, error) {
     xmlError := &Error{}
     decoder := xml.NewDecoder(content)
     err := decoder.Decode(xmlError)
     if err != nil {
-        return (nil, err)
+        return nil, err
     }
-    return (xmlError, err)
+    return xmlError, err
 }
