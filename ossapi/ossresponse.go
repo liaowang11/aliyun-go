@@ -50,6 +50,7 @@ type CopyObjectResult struct {
 //Check status code before using any of the funcs here.
 func ParseListBucket(content io.ReadCloser) (bucketList *BucketList, err error) {
     defer content.Close()
+    bucketList = &BucketList{}
     decoder := xml.NewDecoder(content)
     err = decoder.Decode(bucketList)
     return
@@ -57,6 +58,7 @@ func ParseListBucket(content io.ReadCloser) (bucketList *BucketList, err error) 
 
 func ParseListObject(content io.ReadCloser) (objectList *ObjectList, err error) {
     defer content.Close()
+    objectList = &ObjectList{}
     decoder := xml.NewDecoder(content)
     err = decoder.Decode(objectList)
     return
