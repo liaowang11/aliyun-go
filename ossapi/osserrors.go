@@ -18,7 +18,7 @@ type Error struct {
 
 func (err *Error) ToStdError() error {
     result := fmt.Sprintf("%v", err)
-    errors.New(result)
+    return errors.New(result)
 }
 
 func ParseXmlError(content io.Reader) (*Error, error) {
