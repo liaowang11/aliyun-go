@@ -2,7 +2,9 @@ package ossapi
 
 import (
     "encoding/xml"
+    "errors"
     "io"
+    "fmt"
 )
 
 
@@ -14,6 +16,10 @@ type Error struct {
     HostId string
 }
 
+func (err *Error) ToStdError() error {
+    result := fmt.Sprintf("%v", err)
+    errors.New()
+}
 
 func ParseXmlError(content io.Reader) (*Error, error) {
     xmlError := &Error{}
