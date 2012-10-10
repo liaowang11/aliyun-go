@@ -5,8 +5,8 @@ import (
 )
 
 var (
-    accessId = "ACSA8rpstyHSJ3oC"
-    accessKey = "fTbpxTDg0W"
+    accessId = "*******"
+    accessKey = "*******"
     testBucket = "wliao"
     oss = ossapi.NewOSS(accessId, accessKey)
 )
