@@ -1,6 +1,8 @@
 package ossapi
 
 import (
+	"io/ioutil"
+	"log"
 	"testing"
 )
 
@@ -9,7 +11,28 @@ var (
 	accessKey  = "*******"
 	testBucket = "wliao"
 	oss        = ossapi.NewOSS(accessId, accessKey)
+	testObject = "api_handler.go"
 )
+
+func TestGetObject(t *testing.T) {
+	response := oss.GetObject(testBucket, testObject, nil)
+	if response.StatusCode != 200 {
+		t.Error("Unable to get object")
+	}
+	contents, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		log.Println(err)
+	}
+	log.Println(string(contents))
+}
+
+func TestDelObject(t *testing.T) {
+	response := oss.DelObject(testBucket, testObject, nil)
+	if response.StatusCode != 204 {
+		t.Error("Unable to del object")
+		log.Println(response)
+	}
+}
 
 func TestOssStruct(t *testing.T) {
 	if oss.AccessId != accessId || oss.AccessKey != accessKey {

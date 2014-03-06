@@ -225,6 +225,13 @@ func (oss *OSS) GetObject(bucket, object string, headers http.Header) *http.Resp
 	return oss.ObjectOp("GET", bucket, object, headers, nil)
 }
 
+func (oss *OSS) DelObject(bucket, object string, headers http.Header) *http.Response {
+	if headers == nil {
+		headers = make(http.Header)
+	}
+	return oss.ObjectOp("DELETE", bucket, object, headers, nil)
+}
+
 func (oss *OSS) GetObjectToFile(bucket, object, filename string, headers http.Header) error {
 	res := oss.GetObject(bucket, object, headers)
 	defer res.Body.Close()
