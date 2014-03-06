@@ -22,7 +22,7 @@ import (
 const (
 	DefaultContentType     = "application/octet-stream"
 	SelfDefineHeaderPrefix = "x-oss-"
-	DefaultHost            = "http://storage.aliyun.com"
+	DefaultHost            = "http://oss.aliyuncs.com"
 )
 
 type OSS struct {
