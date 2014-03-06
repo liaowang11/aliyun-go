@@ -3,6 +3,7 @@ package ossapi
 import (
 	"io/ioutil"
 	"log"
+	"os"
 	"testing"
 )
 
@@ -10,9 +11,21 @@ var (
 	accessId   = "*******"
 	accessKey  = "*******"
 	testBucket = "wliao"
-	oss        = ossapi.NewOSS(accessId, accessKey)
+	oss        = NewOSS(accessId, accessKey)
 	testObject = "api_handler.go"
 )
+
+func TestPutObjectFromFile(t *testing.T) {
+	file, err := os.Open("../README.md")
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	response := oss.PutObjectFromFile(testBucket, testObject, nil, file)
+	if response.StatusCode != 200 {
+		t.Error("Unable to put Object")
+	}
+}
 
 func TestGetObject(t *testing.T) {
 	response := oss.GetObject(testBucket, testObject, nil)
