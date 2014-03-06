@@ -114,7 +114,7 @@ func (oss *OSS) BucketOp(method, bucket string, headers http.Header, params url.
 		params = make(url.Values)
 	}
 	url := "/" + bucket + "?" + params.Encode()
-	headers.Add("Date", GetGMTime())
+	headers.Add("Date", getGMTime())
 	headers.Add("Host", DefaultHost)
 	var resource string
 	if acl := params.Get("acl"); acl != "" {
@@ -128,7 +128,7 @@ func (oss *OSS) BucketOp(method, bucket string, headers http.Header, params url.
 func (oss *OSS) GetService() *http.Response {
 	method := "GET"
 	url := "/"
-	date := GetGMTime()
+	date := getGMTime()
 	headers := make(http.Header)
 
 	headers.Add("Date", date)
@@ -186,7 +186,7 @@ func (oss *OSS) ObjectOp(method, bucket, object string, headers http.Header, dat
 	}
 	resource := "/" + bucket + "/" + object
 	urladdr := resource
-	date := GetGMTime()
+	date := getGMTime()
 	headers.Add("Date", date)
 	headers.Add("Host", DefaultHost)
 
@@ -297,6 +297,6 @@ func CopyHeader(header http.Header) (newHeader http.Header) {
 	return
 }
 
-func GetGMTime() string {
-	return (time.Now().UTC()).Format(http.TimeFormat)
+func getGMTime() string {
+	return time.Now().UTC().Format(http.TimeFormat)
 }
