@@ -1,36 +1,35 @@
 package ossapi
 
 import (
-"crypto/sha1"
-"crypto/hmac"
-"fmt"
-//"bytes"
-"net/http"
-"net/url"
-"time"
-"strings"
-"sort"
-"io"
-"log"
-"encoding/base64"
-"mime"
-"os"
-"strconv"
-//"errors"
+	"crypto/hmac"
+	"crypto/sha1"
+	"fmt"
+	//"bytes"
+	"encoding/base64"
+	"io"
+	"log"
+	"mime"
+	"net/http"
+	"net/url"
+	"os"
+	"sort"
+	"strconv"
+	"strings"
+	"time"
+	//"errors"
 )
 
-
 const (
-	DefaultContentType = "application/octet-stream"
+	DefaultContentType     = "application/octet-stream"
 	SelfDefineHeaderPrefix = "x-oss-"
-	DefaultHost = "http://storage.aliyun.com"
+	DefaultHost            = "http://oss.aliyuncs.com"
 )
 
 type OSS struct {
-	AccessId string
-	AccessKey string
+	AccessId   string
+	AccessKey  string
 	signedAuth string
-	Client *http.Client 
+	Client     *http.Client
 }
 
 func NewOSS(id string, key string) *OSS {
@@ -52,7 +51,7 @@ func (oss *OSS) getAssign(method string, headers http.Header, resource string) s
 	date := headers.Get("Date")
 	canonicalizedResource := resource
 	CanonicalizeHeader(headers)
-	
+
 	var canonicalizedHeaders []string = make([]string, 0)
 
 	for k, _ := range headers {
@@ -62,7 +61,7 @@ func (oss *OSS) getAssign(method string, headers http.Header, resource string) s
 	}
 
 	sort.Strings(canonicalizedHeaders)
-	
+
 	var canonicalizedHeader string
 
 	for _, v := range canonicalizedHeaders {
@@ -78,11 +77,10 @@ func (oss *OSS) getAssign(method string, headers http.Header, resource string) s
 	return strings.TrimSpace(base64.StdEncoding.EncodeToString(h.Sum(nil)))
 }
 
-
 func (oss *OSS) SignUrlAuthWithExpireTime(method, urladdr string, headers http.Header, resource string, timeout int) string {
 	sendTime := headers.Get("Date")
 	if sendTime == "" {
-		sendTime = fmt.Sprint("%d",time.Now().Unix())
+		sendTime = fmt.Sprint("%d", time.Now().Unix())
 	}
 	headers.Add("Date", sendTime)
 	auth := oss.getAssign(method, headers, resource)
@@ -90,13 +88,12 @@ func (oss *OSS) SignUrlAuthWithExpireTime(method, urladdr string, headers http.H
 	params.Add("OSSAccessKeyId", oss.AccessId)
 	params.Add("Expires", sendTime)
 	params.Add("Signature", auth)
-	return url.QueryEscape(urladdr + "?"  + params.Encode())
+	return url.QueryEscape(urladdr + "?" + params.Encode())
 }
 
 func (oss *OSS) createSignForNormalAuth(method string, headers http.Header, resource string) string {
 	return "OSS " + oss.AccessId + ":" + oss.getAssign(method, headers, resource)
 }
-
 
 //Have to break the abstraction to append keys with lower case.
 func CanonicalizeHeader(headers http.Header) {
@@ -117,7 +114,7 @@ func (oss *OSS) BucketOp(method, bucket string, headers http.Header, params url.
 		params = make(url.Values)
 	}
 	url := "/" + bucket + "?" + params.Encode()
-	headers.Add("Date", GetGMTime())
+	headers.Add("Date", getGMTime())
 	headers.Add("Host", DefaultHost)
 	var resource string
 	if acl := params.Get("acl"); acl != "" {
@@ -131,7 +128,7 @@ func (oss *OSS) BucketOp(method, bucket string, headers http.Header, params url.
 func (oss *OSS) GetService() *http.Response {
 	method := "GET"
 	url := "/"
-	date := GetGMTime()
+	date := getGMTime()
 	headers := make(http.Header)
 
 	headers.Add("Date", date)
@@ -153,7 +150,7 @@ func (oss *OSS) GetBucket(bucket, prefix, marker, delimiter, maxkeys string, hea
 
 func (oss *OSS) ListBucket(bucket, prefix, marker, delimiter, maxkeys string, headers http.Header) *http.Response {
 	params := make(url.Values)
-	if prefix != ""{
+	if prefix != "" {
 		params.Add("prefix", prefix)
 	}
 	if marker != "" {
@@ -183,20 +180,18 @@ func (oss *OSS) DeleteBucket(bucket string) *http.Response {
 	return oss.BucketOp("DELETE", bucket, nil, nil)
 }
 
-
 func (oss *OSS) ObjectOp(method, bucket, object string, headers http.Header, data io.Reader) *http.Response {
 	if headers == nil {
 		headers = make(http.Header)
 	}
 	resource := "/" + bucket + "/" + object
 	urladdr := resource
-	date := GetGMTime()
+	date := getGMTime()
 	headers.Add("Date", date)
 	headers.Add("Host", DefaultHost)
 
 	return oss.Do(method, urladdr, resource, data, headers)
 }
-
 
 func (oss *OSS) PutObjectFromFile(bucket, object string, headers http.Header, file *os.File) *http.Response {
 	if headers == nil {
@@ -230,6 +225,12 @@ func (oss *OSS) GetObject(bucket, object string, headers http.Header) *http.Resp
 	return oss.ObjectOp("GET", bucket, object, headers, nil)
 }
 
+func (oss *OSS) DelObject(bucket, object string, headers http.Header) *http.Response {
+	if headers == nil {
+		headers = make(http.Header)
+	}
+	return oss.ObjectOp("DELETE", bucket, object, headers, nil)
+}
 
 func (oss *OSS) GetObjectToFile(bucket, object, filename string, headers http.Header) error {
 	res := oss.GetObject(bucket, object, headers)
@@ -250,7 +251,7 @@ func (oss *OSS) GetObjectToFile(bucket, object, filename string, headers http.He
 }
 
 func (oss *OSS) Do(method, url, resource string, body io.Reader, headers http.Header) *http.Response {
-	if oss.AccessKey != ""  {
+	if oss.AccessKey != "" {
 		headers.Add("Authorization", oss.createSignForNormalAuth(method, headers, resource))
 	} else {
 		headers.Add("Authorization", oss.AccessId)
@@ -262,19 +263,18 @@ func (oss *OSS) Do(method, url, resource string, body io.Reader, headers http.He
 	} else {
 		host = DefaultHost
 	}
-	req, err := http.NewRequest(method, host + url, body)
+	req, err := http.NewRequest(method, host+url, body)
 	if err != nil {
 		fmt.Print("Error Creating Request: \n", err)
 	}
 	req.Header = headers
 	if contentLenStr := headers.Get("Content-Length"); contentLenStr != "" {
-		if cLen, err := strconv.ParseInt(contentLenStr, 10, 64); err != nil{
+		if cLen, err := strconv.ParseInt(contentLenStr, 10, 64); err != nil {
 			req.ContentLength = -1
 		} else {
 			req.ContentLength = cLen
-		}	
+		}
 	}
-
 
 	log.Printf("Request: %v\n", req)
 	resp, err := oss.Client.Do(req)
@@ -283,20 +283,20 @@ func (oss *OSS) Do(method, url, resource string, body io.Reader, headers http.He
 	if err != nil {
 		fmt.Print("Error getting the resonse.\n")
 	}
-	
+
 	return resp
 }
 
 func CopyHeader(header http.Header) (newHeader http.Header) {
-    newHeader = make(http.Header)
-    for k, v := range header {
-        newSlice := make([]string, len(v))
-        copy(newSlice, v)
-        newHeader[k] = newSlice
-    }
-    return
+	newHeader = make(http.Header)
+	for k, v := range header {
+		newSlice := make([]string, len(v))
+		copy(newSlice, v)
+		newHeader[k] = newSlice
+	}
+	return
 }
 
-func GetGMTime() string {
-	return (time.Now().UTC()).Format(http.TimeFormat)
+func getGMTime() string {
+	return time.Now().UTC().Format(http.TimeFormat)
 }
